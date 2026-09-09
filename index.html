@@ -80,7 +80,7 @@
 
   /* controls, flat ink outline */
   .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin-top: 30px; }
-  button, input {
+  button, input:not([type=range]) {
     font: inherit; font-size: 15px; color: var(--ink); background: transparent;
     border: 1px solid var(--rule); border-radius: 2px; padding: 10px 14px; min-height: 44px; cursor: pointer;
   }
@@ -132,6 +132,32 @@
   .refs a { color: var(--accent); word-break: break-word; }
 
   .err { color: var(--accent); text-align: center; font-size: 14px; font-style: italic; margin-top: 10px; min-height: 1em; }
+
+  /* explore panel (season + latitude scrubber) */
+  .explore { max-width: 380px; margin: 30px auto 0; }
+  .explore-head { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--rule); padding-top: 14px; }
+  .explore-title { font-variant: small-caps; letter-spacing: .04em; font-size: 15px; color: var(--ink); }
+  .linkbtn { background: none; border: none; min-height: 0; padding: 0; box-shadow: none; font-size: 13px; font-style: italic; color: var(--accent); cursor: pointer; }
+  .linkbtn:hover { text-decoration: underline; border: none; }
+  .slider { display: block; margin-top: 16px; }
+  .slabel { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-bottom: 6px; }
+  .slabel b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; margin: 6px 0; background: var(--rule); border-radius: 2px; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 17px; height: 17px; border-radius: 50%; background: var(--day); border: 2px solid var(--paper); box-shadow: 0 0 0 1px var(--rule); }
+  input[type=range]::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%; background: var(--day); border: 2px solid var(--paper); }
+  input[type=range]:focus-visible { outline: 2px solid var(--day); outline-offset: 4px; }
+  .ticks { display: flex; justify-content: space-between; font-size: 11px; font-variant: small-caps; letter-spacing: .03em; color: var(--faint); margin-top: 3px; }
+  .ticks i { font-style: normal; }
+  .detents { position: relative; height: 32px; margin-top: 4px; }
+  .detent { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; min-height: 0; padding: 0; box-shadow: none; cursor: pointer; }
+  .detent:first-child { transform: translateX(0); align-items: flex-start; }
+  .detent:last-child { transform: translateX(-100%); align-items: flex-end; }
+  .dtick { width: 1px; height: 7px; background: var(--muted); }
+  .dlab { font-size: 10px; font-variant: small-caps; letter-spacing: .02em; color: var(--faint); line-height: 1.12; text-align: center; white-space: nowrap; }
+  .detent:hover { border: none; }
+  .detent:hover .dlab { color: var(--muted); }
+  .detent.on .dtick { width: 2px; background: var(--day); }
+  .detent.on .dlab { color: var(--day); }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
@@ -195,13 +221,29 @@
     </div>
   </figure>
 
-  <div class="civil">Civil time <b id="civilTime">--:--</b> &nbsp;·&nbsp; sunrise <b id="srTime">--:--</b> &nbsp;·&nbsp; sunset <b id="ssTime">--:--</b></div>
+  <div class="civil" id="civilLine">Civil time <b id="civilTime">--:--</b> &nbsp;·&nbsp; sunrise <b id="srTime">--:--</b> &nbsp;·&nbsp; sunset <b id="ssTime">--:--</b></div>
 
   <table class="figures">
     <tr><th>Daylight hour</th><td id="sDay">— <small>min</small></td></tr>
     <tr><th>Night hour</th><td id="sNight">— <small>min</small></td></tr>
     <tr><th>uš per hour</th><td id="sUsh">—</td></tr>
   </table>
+
+  <section class="explore">
+    <div class="explore-head">
+      <span class="explore-title">Explore the seasons</span>
+      <button type="button" id="exploreReset" class="linkbtn" hidden>◄ back to now</button>
+    </div>
+    <label class="slider">
+      <span class="slabel">Season <b id="seasonVal">—</b></span>
+      <input id="seasonSlider" type="range" min="1" max="365" step="1" value="1" aria-label="Day of the year">
+    </label>
+    <div class="detents" id="detents"></div>
+    <label class="slider">
+      <span class="slabel">Latitude <b id="latVal">—</b></span>
+      <input id="latSlider" type="range" min="-66" max="66" step="1" value="48" aria-label="Latitude">
+    </label>
+  </section>
 
   <div class="controls">
     <button class="primary" id="useLoc">Use my location</button>
@@ -385,7 +427,31 @@ function placeMarker(f, b, now) {
 
 // ---------- App ----------
 let LAT = 48.8566, LNG = 2.3522, LOCNAME = "Paris", LOCTZ = "Europe/Paris";
-let lastDayFrac = null;
+let currentFrac = null, animRAF = null, animating = false, animTarget = null, pendingAnimate = false;
+// Draw the dial at `target` day-fraction; tween the arcs when `animate` is set (a season jump).
+function setDial(target, animate) {
+  if (animate && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) animate = false;
+  if (currentFrac === null) { drawStatic(target); currentFrac = target; return; }
+  if (!animate) {
+    if (animating && animTarget !== null && Math.abs(target - animTarget) < 0.01) return; // don't interrupt a tween to the same target
+    if (animating) { if (animRAF) cancelAnimationFrame(animRAF); animating = false; }
+    if (Math.abs(target - currentFrac) > 0.0005) { drawStatic(target); currentFrac = target; }
+    return;
+  }
+  if (Math.abs(target - currentFrac) < 0.0015) return;
+  if (animRAF) cancelAnimationFrame(animRAF);
+  const from = currentFrac, to = target, t0 = performance.now(), dur = 520;
+  const ease = x => 1 - Math.pow(1 - x, 3);
+  animating = true; animTarget = to;
+  const stepFn = (nowT) => {
+    const p = Math.min(1, (nowT - t0) / dur);
+    const frac = from + (to - from) * ease(p);
+    drawStatic(frac); currentFrac = frac;
+    if (p < 1) animRAF = requestAnimationFrame(stepFn);
+    else { animating = false; currentFrac = to; }
+  };
+  animRAF = requestAnimationFrame(stepFn);
+}
 const pad = n => String(n).padStart(2, "0");
 function hhmm(d) {
   if (LOCTZ) {
@@ -403,38 +469,64 @@ function dateLabel(d) {
   return new Intl.DateTimeFormat("en-GB", opt).format(d);
 }
 
+// ----- explore mode: season + latitude scrubber -----
+let explore = { active: false, doy: 172, lat: 48 };
+function dayOfYear(d) { return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / MS_DAY); }
+function seasonDate(doy) { return new Date(Date.UTC(new Date().getFullYear(), 0, doy, 12, 0, 0)); }
+function seasonLabel(d, long) { return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: long ? "long" : "short", timeZone: "UTC" }).format(d); }
+function latLabel(lat) { const a = Math.abs(Math.round(lat)); return a === 0 ? "0° (equator)" : a + "° " + (lat >= 0 ? "N" : "S"); }
+function hm(ms) { return Math.floor(ms / 3600000) + " h " + pad(Math.round((ms % 3600000) / 60000)) + " m"; }
+function liveCivil(now, f) {
+  return 'Civil time <b>' + hhmm(now) + '</b> &nbsp;·&nbsp; sunrise <b>' + hhmm(f.sr) + '</b> &nbsp;·&nbsp; sunset <b>' + hhmm(f.ss) + '</b>';
+}
+function exploreCivil(f) {
+  const day = f.ss - f.sr;
+  return 'Day length <b>' + hm(day) + '</b> &nbsp;·&nbsp; night <b>' + hm(MS_DAY - day) + '</b>';
+}
+function currentSample() {
+  if (explore.active) return { now: seasonDate(explore.doy), lat: explore.lat, lng: LNG };
+  return { now: new Date(), lat: LAT, lng: LNG };
+}
+
 function tick() {
-  const now = new Date();
-  const f = frameFor(now, LAT, LNG);
+  const S = currentSample();
+  const now = S.now, f = frameFor(now, S.lat, S.lng);
   $("err").textContent = "";
+  $("locName").textContent = LOCNAME;
+  $("capLoc").textContent = explore.active ? latLabel(S.lat) : LOCNAME;
+  $("capDate").textContent = explore.active ? seasonLabel(now, true) : dateLabel(now);
   if (f.polar) {
     $("oHour").textContent = "--"; $("oUsh").textContent = "--"; $("oGar").textContent = "--";
     $("oPart").textContent = f.polar === "day" ? "MIDNIGHT SUN" : "POLAR NIGHT";
-    $("oPartLong").textContent = "no sunrise/sunset at this latitude today";
+    $("oPartLong").textContent = "no sunrise or sunset at this latitude";
+    $("civilLine").innerHTML = explore.active
+      ? "The sun stays " + (f.polar === "day" ? "above" : "below") + " the horizon all day"
+      : "";
+    currentFrac = null; pendingAnimate = false;
     return;
   }
   const b = babylon(now, f);
-  if (b.dayFrac !== lastDayFrac) { drawStatic(b.dayFrac); lastDayFrac = b.dayFrac; }
+  setDial(b.dayFrac, pendingAnimate); pendingAnimate = false;
   placeMarker(f, b, now);
   $("oHour").textContent = pad(b.h);
   $("oUsh").textContent = pad(b.ush);
   $("oGar").textContent = pad(b.gar);
   $("oPart").textContent = b.part;
   $("oPartLong").textContent = b.partLong;
-  $("civilTime").textContent = hhmm(now);
-  $("srTime").textContent = hhmm(f.sr);
-  $("ssTime").textContent = hhmm(f.ss);
   $("sDay").innerHTML = b.lDayMin.toFixed(1) + " <small>min</small>";
   $("sNight").innerHTML = b.lNightMin.toFixed(1) + " <small>min</small>";
   $("sUsh").textContent = b.ushMax;
-  $("locName").textContent = LOCNAME;
-  $("capLoc").textContent = LOCNAME;
-  $("capDate").textContent = dateLabel(now);
+  $("civilLine").innerHTML = explore.active ? exploreCivil(f) : liveCivil(now, f);
 }
 
 function setLocation(lat, lng, name, tz) {
   LAT = lat; LNG = lng; LOCNAME = name; LOCTZ = tz || null;
-  lastDayFrac = null;
+  explore.active = false;
+  const er = document.getElementById("exploreReset"); if (er) er.hidden = true;
+  const ls = document.getElementById("latSlider"); if (ls) ls.value = Math.round(lat);
+  const ss = document.getElementById("seasonSlider"); if (ss) ss.value = dayOfYear(new Date());
+  updateExploreLabels();
+  pendingAnimate = true;
   tick();
 }
 
@@ -518,6 +610,66 @@ $("setManual").addEventListener("click", () => {
     setLocation(lat, lng, `${lat.toFixed(2)}, ${lng.toFixed(2)} (~local)`, null);
   } else { $("err").textContent = "Enter a valid latitude (-90..90) and longitude (-180..180)."; }
 });
+
+// ----- explore slider wiring -----
+const seasonSlider = $("seasonSlider"), latSlider = $("latSlider"), exploreReset = $("exploreReset");
+const SNAP = 3; // days of magnetic snap around each solstice/equinox
+const DETENTS = [
+  { m: 2, d: 20, name: "March equinox", lab: "Mar<br>equinox" },
+  { m: 5, d: 21, name: "June solstice", lab: "Jun<br>solstice" },
+  { m: 8, d: 22, name: "September equinox", lab: "Sep<br>equinox" },
+  { m: 11, d: 21, name: "December solstice", lab: "Dec<br>solstice" }
+].map(x => ({ ...x, doy: dayOfYear(new Date(Date.UTC(new Date().getFullYear(), x.m, x.d))) }));
+
+$("detents").innerHTML = DETENTS.map(d => {
+  const pct = ((d.doy - 1) / 364) * 100;
+  return `<button type="button" class="detent" data-doy="${d.doy}" style="left:${pct.toFixed(1)}%" title="${d.name}"><span class="dtick"></span><span class="dlab">${d.lab}</span></button>`;
+}).join("");
+
+function highlightDetents() {
+  const v = +seasonSlider.value;
+  document.querySelectorAll("#detents .detent").forEach(b => b.classList.toggle("on", +b.dataset.doy === v));
+}
+function updateExploreLabels() {
+  const hit = DETENTS.find(x => x.doy === +seasonSlider.value);
+  $("seasonVal").textContent = seasonLabel(seasonDate(+seasonSlider.value), false) + (hit ? " · " + hit.name : "");
+  $("latVal").textContent = latLabel(+latSlider.value);
+  highlightDetents();
+}
+function enterExplore(animate) {
+  explore.active = true;
+  explore.doy = +seasonSlider.value;
+  explore.lat = +latSlider.value;
+  exploreReset.hidden = false;
+  pendingAnimate = !!animate;
+  updateExploreLabels();
+  tick();
+}
+function snapSeason() {
+  const v = +seasonSlider.value;
+  let best = null, bd = 999;
+  for (const d of DETENTS) { const dist = Math.abs(v - d.doy); if (dist < bd) { bd = dist; best = d; } }
+  if (best && bd <= SNAP) seasonSlider.value = best.doy;
+}
+seasonSlider.addEventListener("input", () => { snapSeason(); enterExplore(false); });
+latSlider.addEventListener("input", () => enterExplore(false));
+$("detents").addEventListener("click", e => {
+  const b = e.target.closest(".detent"); if (!b) return;
+  seasonSlider.value = b.dataset.doy;
+  enterExplore(true); // jump to a solstice/equinox — animate the arcs
+});
+exploreReset.addEventListener("click", () => {
+  explore.active = false;
+  exploreReset.hidden = true;
+  seasonSlider.value = dayOfYear(new Date());
+  latSlider.value = Math.round(LAT);
+  pendingAnimate = true;
+  updateExploreLabels();
+  tick();
+});
+seasonSlider.value = dayOfYear(new Date());
+latSlider.value = Math.round(LAT);
+updateExploreLabels();
 
 tick();
 setInterval(tick, 250);
