@@ -1,7 +1,6 @@
 # Babylonian Hours
 
-A clock that shows the time in **seasonal hours** as reckoned in ancient
-**Babylonia** (southern Mesopotamia, centered on Babylon).
+A clock that shows the time in seasonal hours as reckoned in ancient Babylonia.
 
 **Live:** https://gaassassins.github.io/babylonian-hours/
 
