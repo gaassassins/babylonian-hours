@@ -4,17 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Babylonian Hours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Spectral+SC:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #2c2620;
-    --muted: #8a8072;
-    --faint: #b4ab9c;
-    --hair: rgba(70,54,38,0.13);
-    --card: #ffffff;
-    --gold: #d97f2b;
-    --gold-deep: #c56a1f;
-    --accent: #c5611f;
-    --indigo: #4a5699;
+    --paper: #f7f3e8;
+    --panel: #fcf9f1;
+    --ink: #22201b;
+    --muted: #6f665a;
+    --faint: #a89e8d;
+    --rule: #d8cfbc;
+    --day: #a8741a;
+    --night: #3a4064;
+    --accent: #8a3b1e;
     color-scheme: light;
   }
   * { box-sizing: border-box; }
@@ -22,96 +25,105 @@
   body {
     margin: 0;
     color: var(--ink);
-    background:
-      radial-gradient(900px 480px at 50% -6%, rgba(255,205,120,0.38), transparent 62%),
-      linear-gradient(180deg, #e9f2fb 0%, #fbf6ec 52%, #f7f0e2 100%);
-    background-attachment: fixed;
-    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    background: var(--paper);
+    font-family: Spectral, Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
     display: flex; flex-direction: column; align-items: center; min-height: 100%;
   }
-  .wrap { width: 100%; max-width: 640px; padding: 30px 20px 64px; }
+  .wrap { width: 100%; max-width: 620px; padding: 40px 24px 72px; }
+  .sc { font-family: "Spectral SC", Spectral, serif; font-weight: 500; letter-spacing: .03em; }
 
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
-  .brand {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 20px; letter-spacing: .01em; color: var(--gold-deep); font-weight: 600;
+  /* masthead */
+  header { text-align: center; border-bottom: 1px solid var(--rule); padding-bottom: 18px; margin-bottom: 8px; }
+  .brand { font-size: 34px; font-weight: 600; letter-spacing: .01em; margin: 0; line-height: 1.1; }
+  .subtitle { font-style: italic; color: var(--muted); font-size: 16px; margin: 5px 0 0; }
+  .loc { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+  .loc .sc { color: var(--ink); }
+  .lede { text-align: center; color: var(--ink); font-size: 16px; line-height: 1.55; margin: 16px auto 4px; max-width: 46ch; }
+
+  /* the figure */
+  figure.dial-wrap { display: flex; flex-direction: column; align-items: center; margin: 18px 0 0; }
+  .dialbox { position: relative; display: grid; place-items: center; }
+  svg { width: min(86vw, 400px); height: auto; display: block; filter: none; }
+  #partLabels text { font-family: "Spectral SC", Spectral, serif; letter-spacing: .06em; }
+  #dayArc { stroke: var(--day); }
+  #nightArc { stroke: var(--night); }
+  .figcap { grid-column: 1 / -1; margin: 14px auto 0; text-align: center; color: var(--muted); font-size: 13.5px; font-style: italic; max-width: 44ch; }
+  .figcap b { font-style: normal; font-variant: small-caps; letter-spacing: .03em; color: var(--ink); font-weight: 500; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin: 4px 0 0; font-size: 12.5px; color: var(--muted); }
+  .legend i { font-style: normal; display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  /* readout, typeset not digital */
+  .readout { position: absolute; top: 50%; transform: translateY(-50%); text-align: center; pointer-events: none; }
+  .hms { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum","lnum"; }
+  .big { font-size: clamp(40px, 13vw, 62px); font-weight: 500; line-height: 1; color: var(--ink); }
+  .big .unit { font-family: "Spectral SC", Spectral, serif; font-size: .32em; font-weight: 500; color: var(--muted); letter-spacing: .04em; vertical-align: baseline; margin: 0 .18em 0 .05em; }
+  .big .colon { color: var(--faint); font-weight: 400; margin: 0 .06em; }
+  .part { margin-top: 12px; font-size: 15px; color: var(--accent); }
+  .part #oPart { font-family: "Spectral SC", Spectral, serif; font-weight: 600; letter-spacing: .08em; }
+  .part small { display: block; text-transform: none; color: var(--muted); font-weight: 400; font-style: italic; font-size: 13px; margin-top: 2px; }
+
+  .civil { text-align: center; color: var(--muted); font-size: 14px; margin-top: 22px; }
+  .civil b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* figures table */
+  .figures { width: 100%; max-width: 360px; margin: 22px auto 4px; border-collapse: collapse; }
+  .figures th, .figures td { padding: 9px 4px; font-size: 15px; }
+  .figures th { text-align: left; font-weight: 400; font-variant: small-caps; letter-spacing: .04em; color: var(--muted); }
+  .figures td { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .figures td small { color: var(--muted); font-size: 12.5px; font-style: italic; }
+  .figures tr { border-bottom: 1px solid var(--rule); }
+  .figures tr:first-child { border-top: 1px solid var(--ink); }
+  .figures tr:last-child { border-bottom: 1px solid var(--ink); }
+
+  /* controls, flat ink outline */
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin-top: 30px; }
+  button, input {
+    font: inherit; font-size: 15px; color: var(--ink); background: transparent;
+    border: 1px solid var(--rule); border-radius: 2px; padding: 10px 14px; min-height: 44px; cursor: pointer;
   }
-  .loc { font-size: 13px; color: var(--muted); }
-  .loc b { color: var(--ink); font-weight: 600; }
-
-  .dial-wrap { position: relative; display: grid; place-items: center; margin: 14px 0 4px; }
-  svg { width: min(88vw, 420px); height: auto; display: block; filter: drop-shadow(0 12px 28px rgba(70,54,38,0.14)); }
-
-  .readout { position: absolute; text-align: center; pointer-events: none; }
-  .hms { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
-  .big { font-size: clamp(44px, 15vw, 76px); font-weight: 700; line-height: .9; letter-spacing: -.02em; color: var(--ink); }
-  .big .unit { font-size: .32em; font-weight: 600; color: var(--muted); vertical-align: super; margin: 0 .16em 0 .08em; }
-  .big .colon { color: var(--faint); font-weight: 400; margin: 0 .1em; }
-  .part { margin-top: 12px; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
-  .part small { display: block; letter-spacing: .04em; text-transform: none; color: var(--muted); font-weight: 500; font-size: 11px; margin-top: 3px; }
-
-  .civil { text-align: center; color: var(--muted); font-size: 13px; margin-top: 16px; }
-  .civil b { color: var(--ink); font-weight: 600; }
-
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 22px 0 6px; }
-  .stat {
-    background: var(--card); border: 1px solid var(--hair); border-radius: 14px; padding: 13px 12px 12px; text-align: center;
-    box-shadow: 0 1px 2px rgba(70,54,38,0.04), 0 10px 22px rgba(70,54,38,0.05);
-  }
-  .stat .k { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
-  .stat .v { font-size: 20px; font-weight: 700; margin-top: 5px; font-variant-numeric: tabular-nums; }
-  .stat .v small { font-size: 12px; font-weight: 500; color: var(--muted); }
-
-  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin-top: 22px; }
-  button, select, input {
-    font: inherit; color: var(--ink); background: var(--card);
-    border: 1px solid var(--hair); border-radius: 10px; padding: 11px 14px; min-height: 44px; cursor: pointer;
-    box-shadow: 0 1px 2px rgba(70,54,38,0.04);
-  }
-  button:hover, select:hover { border-color: rgba(70,54,38,0.28); }
-  button.primary { background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep) 100%); color: #fff; border-color: transparent; font-weight: 650; }
-  button.primary:hover { filter: brightness(1.05); }
-  select { cursor: pointer; }
+  button:hover { border-color: var(--ink); }
+  button.primary { border-color: var(--ink); background: var(--ink); color: var(--paper); font-variant: small-caps; letter-spacing: .04em; }
+  button.primary:hover { background: #000; }
   .manual { display: flex; gap: 6px; align-items: center; }
-  .manual input { width: 92px; }
-  input::placeholder { color: var(--faint); }
+  .manual input { width: 76px; }
+  input::placeholder { color: var(--faint); font-style: italic; }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--day); outline-offset: 1px; }
 
   .combo { position: relative; }
-  #citySearch { width: 200px; cursor: text; }
+  #citySearch { width: 210px; cursor: text; }
   .city-list {
-    position: absolute; z-index: 20; left: 0; right: auto; top: calc(100% + 6px); margin: 0; padding: 5px;
+    position: absolute; z-index: 20; left: 0; right: auto; top: calc(100% + 5px); margin: 0; padding: 4px;
     list-style: none; max-height: 300px; overflow-y: auto;
     min-width: 100%; width: max-content; max-width: min(340px, 92vw);
-    background: var(--card); border: 1px solid var(--hair); border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(70,54,38,0.16); text-align: left;
+    background: var(--panel); border: 1px solid var(--ink); border-radius: 2px;
+    box-shadow: 0 10px 26px rgba(34,32,27,0.14); text-align: left;
   }
   .city-list li {
-    padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 14px; line-height: 1.25;
-    display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
+    padding: 6px 10px; cursor: pointer; font-size: 15px; line-height: 1.25;
+    display: flex; align-items: baseline; gap: 10px; white-space: nowrap;
   }
-  .city-list li .cty { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
-  .city-list li:hover, .city-list li.active { background: #f5ede0; }
-  .city-list li mark { background: rgba(217,127,43,0.20); color: inherit; border-radius: 3px; padding: 0 1px; }
-  .city-list .empty { color: var(--muted); cursor: default; white-space: normal; line-height: 1.45; max-width: 240px; }
+  .city-list li .cty { color: var(--muted); font-size: 13px; font-style: italic; overflow: hidden; text-overflow: ellipsis; }
+  .city-list li:hover, .city-list li.active { background: #efe7d6; }
+  .city-list li mark { background: transparent; color: var(--accent); font-weight: 600; }
+  .city-list .empty { color: var(--muted); cursor: default; white-space: normal; font-style: italic; line-height: 1.45; max-width: 240px; }
   .city-list .empty:hover { background: none; }
 
-  details { margin-top: 32px; border-top: 1px solid var(--hair); padding-top: 18px; }
-  summary { cursor: pointer; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: .02em; list-style: none; }
+  details { margin-top: 34px; border-top: 1px solid var(--ink); padding-top: 16px; }
+  summary { cursor: pointer; color: var(--ink); font-size: 15px; font-style: italic; list-style: none; }
   summary::-webkit-details-marker { display: none; }
-  summary::before { content: "＋ "; color: var(--accent); }
-  details[open] summary::before { content: "− "; }
-  .about { color: #5f574c; font-size: 14px; line-height: 1.62; }
-  .about h4 { color: var(--ink); margin: 18px 0 6px; font-size: 14px; }
-  .about p { margin: 8px 0; }
-  .about code { background: #f3ece0; padding: 1px 6px; border-radius: 6px; color: var(--ink); }
-  .sc { font-variant: small-caps; }
+  summary::before { content: "§ "; color: var(--accent); font-style: normal; }
+  .about { color: var(--ink); font-size: 15.5px; line-height: 1.66; }
+  .about h4 { color: var(--ink); margin: 20px 0 6px; font-size: 15px; font-variant: small-caps; letter-spacing: .04em; }
+  .about p { margin: 10px 0; }
+  .about code { font-family: "Spectral SC", Spectral, serif; background: #efe7d6; padding: 0 5px; border-radius: 2px; }
   .about ul { margin: 6px 0; padding-left: 20px; }
-  .about a { color: var(--gold-deep); }
-  .credit { margin-top: 22px; font-size: 12px; color: var(--muted); text-align: center; }
-  .credit a { color: var(--gold-deep); }
+  .about a, .credit a { color: var(--accent); }
+  .credit { margin-top: 24px; font-size: 13px; color: var(--muted); text-align: center; font-style: italic; }
 
-  .err { color: #b3261e; text-align: center; font-size: 13px; margin-top: 10px; min-height: 1em; }
+  .err { color: var(--accent); text-align: center; font-size: 14px; font-style: italic; margin-top: 10px; min-height: 1em; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
@@ -121,11 +133,15 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">Babylonian Hours</div>
-    <div class="loc">📍 <b id="locName">Paris</b></div>
+    <h1 class="brand">Babylonian Hours</h1>
+    <p class="subtitle">A clock in seasonal hours</p>
+    <p class="loc">at <span class="sc" id="locName">Paris</span></p>
   </header>
 
-  <div class="dial-wrap">
+  <p class="lede">Daylight and night were each divided into twelve hours, so an “hour” stretched in summer and shrank in winter. This clock keeps that reckoning for your location.</p>
+
+  <figure class="dial-wrap">
+    <div class="dialbox">
     <svg id="dial" viewBox="0 0 400 400" role="img" aria-label="Babylonian sun dial">
       <defs>
         <linearGradient id="dayGrad" x1="0" y1="0" x2="0" y2="1">
@@ -144,34 +160,40 @@
       </defs>
       <clipPath id="disc"><circle cx="200" cy="200" r="170"/></clipPath>
       <g clip-path="url(#disc)">
-        <rect id="sky"    x="0" y="0"   width="400" height="200" fill="#dcebfa"/>
-        <rect id="ground" x="0" y="200" width="400" height="200" fill="#f1e4c9"/>
+        <rect id="sky"    x="0" y="0"   width="400" height="200" fill="#f3eedf"/>
+        <rect id="ground" x="0" y="200" width="400" height="200" fill="#ece2cc"/>
       </g>
-      <circle cx="200" cy="200" r="170" fill="none" stroke="rgba(70,54,38,0.10)" stroke-width="1"/>
-      <line id="horizon" x1="30" y1="200" x2="370" y2="200" stroke="rgba(70,54,38,0.18)" stroke-width="1"/>
+      <circle cx="200" cy="200" r="170" fill="none" stroke="#22201b" stroke-width="1.25"/>
+      <line id="horizon" x1="30" y1="200" x2="370" y2="200" stroke="#8a8272" stroke-width="1" stroke-dasharray="2 4"/>
       <g id="ticks"></g>
-      <path id="dayArc"   fill="none" stroke="url(#dayGrad)"   stroke-width="8" stroke-linecap="round"/>
-      <path id="nightArc" fill="none" stroke="url(#nightGrad)" stroke-width="8" stroke-linecap="round"/>
-      <g id="partLabels" fill="#9a9081" font-size="11" font-family="inherit" letter-spacing="1"></g>
+      <path id="dayArc"   fill="none" stroke="#a8741a" stroke-width="6" stroke-linecap="butt"/>
+      <path id="nightArc" fill="none" stroke="#3a4064" stroke-width="6" stroke-linecap="butt"/>
+      <g id="partLabels" fill="#6f665a" font-size="12" letter-spacing="1"></g>
       <circle id="glow" r="26" fill="url(#sunGlow)" cx="200" cy="30" style="opacity:0"/>
-      <circle id="marker" r="9" cx="200" cy="30" fill="#e0872f" stroke="#fff" stroke-width="2.5"/>
+      <circle id="marker" r="7" cx="200" cy="30" fill="#a8741a" stroke="#f7f3e8" stroke-width="2.5"/>
     </svg>
 
     <div class="readout">
       <div class="big hms">
-        <span id="oHour">00</span><span class="unit">h</span><span id="oUsh">00</span><span class="colon">:</span><span id="oGar">00</span><span class="unit">′</span>
+        <span id="oHour">00</span><span class="unit">h</span><span id="oUsh">00</span><span class="colon">:</span><span id="oGar">00</span>
       </div>
       <div class="part"><span id="oPart">···</span><small id="oPartLong">&nbsp;</small></div>
     </div>
-  </div>
+    </div>
+    <figcaption class="figcap"><b>Fig. 1.</b> Seasonal hours at <span id="capLoc">Paris</span>, <span id="capDate">—</span>.</figcaption>
+    <div class="legend">
+      <i><span class="sw" style="background:#a8741a"></span> daylight arc</i>
+      <i><span class="sw" style="background:#3a4064"></span> night arc</i>
+    </div>
+  </figure>
 
   <div class="civil">Civil time <b id="civilTime">--:--</b> &nbsp;·&nbsp; sunrise <b id="srTime">--:--</b> &nbsp;·&nbsp; sunset <b id="ssTime">--:--</b></div>
 
-  <div class="stats">
-    <div class="stat"><div class="k">Daylight hour</div><div class="v" id="sDay">-- <small>min</small></div></div>
-    <div class="stat"><div class="k">Night hour</div><div class="v" id="sNight">-- <small>min</small></div></div>
-    <div class="stat"><div class="k">uš per hour</div><div class="v" id="sUsh">--</div></div>
-  </div>
+  <table class="figures">
+    <tr><th>Daylight hour</th><td id="sDay">— <small>min</small></td></tr>
+    <tr><th>Night hour</th><td id="sNight">— <small>min</small></td></tr>
+    <tr><th>uš per hour</th><td id="sUsh">—</td></tr>
+  </table>
 
   <div class="controls">
     <button class="primary" id="useLoc">Use my location</button>
@@ -305,7 +327,7 @@ function drawStatic(dayFrac) {
     const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
     l.setAttribute("x1", x1); l.setAttribute("y1", y1);
     l.setAttribute("x2", x2); l.setAttribute("y2", y2);
-    l.setAttribute("stroke", major ? "rgba(70,54,38,0.5)" : "rgba(70,54,38,0.17)");
+    l.setAttribute("stroke", major ? "rgba(34,32,27,0.55)" : "rgba(34,32,27,0.2)");
     l.setAttribute("stroke-width", major ? 2 : 1);
     ticks.appendChild(l);
   };
@@ -335,8 +357,8 @@ function placeMarker(f, b, now) {
   const m = $("marker"), g = $("glow");
   m.setAttribute("cx", x); m.setAttribute("cy", y);
   g.setAttribute("cx", x); g.setAttribute("cy", y);
-  if (f.daytime) { m.setAttribute("fill", "#e0872f"); m.setAttribute("r", 10); g.style.opacity = 1; }
-  else           { m.setAttribute("fill", "#4a5699"); m.setAttribute("r", 8);  g.style.opacity = 0; }
+  if (f.daytime) { m.setAttribute("fill", "#a8741a"); m.setAttribute("r", 8); g.style.opacity = 0; }
+  else           { m.setAttribute("fill", "#3a4064"); m.setAttribute("r", 7); g.style.opacity = 0; }
 }
 
 // ---------- App ----------
@@ -352,6 +374,11 @@ function hhmm(d) {
   }
   const s = new Date(d.getTime() + Math.round(LNG / 15) * 3600000);
   return pad(s.getUTCHours()) + ":" + pad(s.getUTCMinutes());
+}
+function dateLabel(d) {
+  const opt = { day: "numeric", month: "long", year: "numeric" };
+  if (LOCTZ) { try { return new Intl.DateTimeFormat("en-GB", { ...opt, timeZone: LOCTZ }).format(d); } catch (e) { /* fall through */ } }
+  return new Intl.DateTimeFormat("en-GB", opt).format(d);
 }
 
 function tick() {
@@ -379,6 +406,8 @@ function tick() {
   $("sNight").innerHTML = b.lNightMin.toFixed(1) + " <small>min</small>";
   $("sUsh").textContent = b.ushMax;
   $("locName").textContent = LOCNAME;
+  $("capLoc").textContent = LOCNAME;
+  $("capDate").textContent = dateLabel(now);
 }
 
 function setLocation(lat, lng, name, tz) {
