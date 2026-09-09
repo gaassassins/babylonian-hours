@@ -46,8 +46,8 @@
   .readout { position: absolute; text-align: center; pointer-events: none; }
   .hms { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
   .big { font-size: clamp(44px, 15vw, 76px); font-weight: 700; line-height: .9; letter-spacing: -.02em; color: var(--ink); }
-  .big .unit { font-size: .34em; font-weight: 600; color: var(--muted); vertical-align: super; margin: 0 .06em 0 .02em; }
-  .big .colon { color: var(--faint); font-weight: 400; margin: 0 .04em; }
+  .big .unit { font-size: .32em; font-weight: 600; color: var(--muted); vertical-align: super; margin: 0 .16em 0 .08em; }
+  .big .colon { color: var(--faint); font-weight: 400; margin: 0 .1em; }
   .part { margin-top: 12px; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
   .part small { display: block; letter-spacing: .04em; text-transform: none; color: var(--muted); font-weight: 500; font-size: 11px; margin-top: 3px; }
 
@@ -111,6 +111,10 @@
   .credit a { color: var(--gold-deep); }
 
   .err { color: #b3261e; text-align: center; font-size: 13px; margin-top: 10px; min-height: 1em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  }
 </style>
 </head>
 <body>
