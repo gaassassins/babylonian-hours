@@ -111,7 +111,8 @@
   .city-list .empty { color: var(--muted); cursor: default; white-space: normal; font-style: italic; line-height: 1.45; max-width: 240px; }
   .city-list .empty:hover { background: none; }
 
-  details { margin-top: 34px; border-top: 1px solid var(--ink); padding-top: 16px; }
+  .apparatus-title { margin: 42px 0 0; padding-top: 18px; border-top: 1px solid var(--ink); font-size: 19px; font-weight: 600; font-variant: small-caps; letter-spacing: .04em; }
+  details { margin-top: 16px; }
   summary { cursor: pointer; color: var(--ink); font-size: 15px; font-style: italic; list-style: none; }
   summary::-webkit-details-marker { display: none; }
   summary::before { content: "§ "; color: var(--accent); font-style: normal; }
@@ -122,6 +123,13 @@
   .about ul { margin: 6px 0; padding-left: 20px; }
   .about a, .credit a { color: var(--accent); }
   .credit { margin-top: 24px; font-size: 13px; color: var(--muted); text-align: center; font-style: italic; }
+
+  .refs { margin-top: 20px; }
+  .refs .refs-lead { margin: 10px 0 12px; font-size: 14px; font-style: italic; color: var(--muted); }
+  .refs ul { list-style: none; margin: 0; padding: 0; }
+  .refs li { text-indent: -1.1em; padding-left: 1.1em; margin: 0 0 11px; font-size: 14.5px; line-height: 1.5; color: var(--ink); }
+  .refs cite { font-style: italic; }
+  .refs a { color: var(--accent); word-break: break-word; }
 
   .err { color: var(--accent); text-align: center; font-size: 14px; font-style: italic; margin-top: 10px; min-height: 1em; }
 
@@ -211,6 +219,8 @@
   </div>
   <div class="err" id="err"></div>
 
+  <h2 class="apparatus-title">Notes &amp; references</h2>
+
   <details>
     <summary>What am I looking at?</summary>
     <div class="about">
@@ -228,9 +238,21 @@
       </ul>
       <h4>What's different from the original</h4>
       <p>Sunrise and sunset are computed in your browser from the <a href="https://en.wikipedia.org/wiki/Sunrise_equation" target="_blank" rel="noopener">sunrise equation</a> — no external APIs, works offline. Location comes from your device (with your permission) or the picker above.</p>
-      <p class="credit">Concept &amp; scholarship by Willis Monroe — <a href="https://github.com/willismonroe/babylonian-hours" target="_blank" rel="noopener">original project</a>. Modern rebuild.</p>
     </div>
   </details>
+
+  <details class="refs">
+    <summary>Further reading</summary>
+    <p class="refs-lead">Scholarly and educational sources on Babylonian seasonal hours and timekeeping.</p>
+    <ul>
+      <li>Rochberg-Halton, F. “Babylonian Seasonal Hours.” <cite>Centaurus</cite> 32, no. 2 (1989): 146–170. <a href="https://doi.org/10.1111/j.1600-0498.1989.tb00843.x" target="_blank" rel="noopener">doi:10.1111/j.1600-0498.1989.tb00843.x</a></li>
+      <li>Stephenson, F. R., &amp; Fatoohi, L. J. “The Babylonian Unit of Time.” <cite>Journal for the History of Astronomy</cite> 25 (1994). <a href="https://doi.org/10.1177/002182869402500203" target="_blank" rel="noopener">doi:10.1177/002182869402500203</a></li>
+      <li>“The Relation of Babylonian Astronomy to its Culture and Transmission.” <cite>IAU Symposium</cite> 260 (2011). <a href="https://adsabs.harvard.edu/pdf/2011IAUS..260...62H" target="_blank" rel="noopener">Harvard ADS (PDF)</a></li>
+      <li>Cuneiform Digital Library Initiative — an open academic database of cuneiform tablets, including astronomical and time-reckoning texts. <a href="https://cdli.mpiwg-berlin.mpg.de/" target="_blank" rel="noopener">cdli.mpiwg-berlin.mpg.de</a></li>
+    </ul>
+  </details>
+
+  <p class="credit">Concept &amp; scholarship by Willis Monroe — <a href="https://github.com/willismonroe/babylonian-hours" target="_blank" rel="noopener">original project</a>. Modern rebuild by <a href="https://github.com/gaassassins" target="_blank" rel="noopener">gaassassins</a>.</p>
 </div>
 
 <script>
