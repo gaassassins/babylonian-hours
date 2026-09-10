@@ -52,12 +52,16 @@ hour is the rest of the 24 hours divided by twelve.
 
 ## Running
 
-A single self-contained `index.html`, no build step and no dependencies. Open it
-in a browser, or serve the folder:
+The site is built from `src/` with esbuild into a single self-contained page
+with no runtime dependencies. Build it, then open or serve `dist/`:
 
-    python3 -m http.server 8000
+    npm install
+    npm run build                    # writes dist/index.html
 
-then open http://localhost:8000.
+    python3 -m http.server -d dist 8000
+    # then open http://localhost:8000
+
+Run the unit tests with `npm test`.
 
 ## Design
 
