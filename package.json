@@ -1,0 +1,20 @@
+{
+  "name": "babylonian-hours",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A clock that shows the time in Babylonian seasonal hours.",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://gaassassins.github.io/babylonian-hours/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gaassassins/babylonian-hours.git"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.0"
+  }
+}

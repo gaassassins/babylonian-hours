@@ -1,2 +1,5 @@
 .DS_Store
 .gstack/
+.idea/
+node_modules/
+dist/
