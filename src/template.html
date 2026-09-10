@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Babylonian Hours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Spectral+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<!--STYLES-->
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="brand">Babylonian Hours</h1>
+    <p class="subtitle">A clock in seasonal hours</p>
+    <p class="loc">at <span class="sc" id="locName">Paris</span></p>
+  </header>
+
+  <p class="lede">Daylight and night were each divided into twelve hours, so an “hour” stretched in summer and shrank in winter. This clock keeps that reckoning for your location.</p>
+
+  <figure class="dial-wrap">
+    <div class="dialbox">
+    <svg id="dial" viewBox="0 0 400 400" role="img" aria-label="Babylonian sun dial">
+      <defs>
+        <linearGradient id="dayGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f2b64c"/>
+          <stop offset="1" stop-color="#dd7f2b"/>
+        </linearGradient>
+        <linearGradient id="nightGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8592d6"/>
+          <stop offset="1" stop-color="#4a5699"/>
+        </linearGradient>
+        <radialGradient id="sunGlow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#ffdf9b"/>
+          <stop offset="0.55" stop-color="#f4b24a"/>
+          <stop offset="1" stop-color="#f4b24a" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <clipPath id="disc"><circle cx="200" cy="200" r="170"/></clipPath>
+      <g clip-path="url(#disc)">
+        <rect id="sky"    x="0" y="0"   width="400" height="200" fill="#f3eedf"/>
+        <rect id="ground" x="0" y="200" width="400" height="200" fill="#ece2cc"/>
+      </g>
+      <circle cx="200" cy="200" r="170" fill="none" stroke="#22201b" stroke-width="1.25"/>
+      <line id="horizon" x1="30" y1="200" x2="370" y2="200" stroke="#8a8272" stroke-width="1" stroke-dasharray="2 4"/>
+      <g id="ticks"></g>
+      <path id="dayArc"   fill="none" stroke-width="6" stroke-linecap="butt"/>
+      <path id="nightArc" fill="none" stroke-width="6" stroke-linecap="butt"/>
+      <g id="partLabels" fill="#6f665a" font-size="12" letter-spacing="1"></g>
+      <circle id="glow" r="26" fill="url(#sunGlow)" cx="200" cy="30" style="opacity:0"/>
+      <circle id="marker" r="7" cx="200" cy="30"/>
+    </svg>
+
+    <div class="readout">
+      <div class="big hms">
+        <span id="oHour">00</span><span class="unit">h</span><span id="oUsh">00</span><span class="colon">:</span><span id="oGar">00</span>
+      </div>
+      <div class="part"><span id="oPart">···</span><small id="oPartLong">&nbsp;</small></div>
+    </div>
+    </div>
+    <figcaption class="figcap"><b>Fig. 1.</b> Seasonal hours at <span id="capLoc">Paris</span>, <span id="capDate">—</span>.</figcaption>
+    <div class="legend">
+      <i><span class="sw day"></span> daylight arc</i>
+      <i><span class="sw night"></span> night arc</i>
+    </div>
+  </figure>
+
+  <div class="civil" id="civilLine">Civil time <b id="civilTime">--:--</b> &nbsp;·&nbsp; sunrise <b id="srTime">--:--</b> &nbsp;·&nbsp; sunset <b id="ssTime">--:--</b></div>
+
+  <table class="figures">
+    <tr><th>Daylight hour</th><td id="sDay">— <small>min</small></td></tr>
+    <tr><th>Night hour</th><td id="sNight">— <small>min</small></td></tr>
+    <tr><th>uš per hour</th><td id="sUsh">—</td></tr>
+  </table>
+
+  <section class="explore">
+    <div class="explore-head">
+      <span class="explore-title">Explore the seasons</span>
+      <button type="button" id="exploreReset" class="linkbtn" hidden>◄ back to now</button>
+    </div>
+    <label class="slider">
+      <span class="slabel">Season <b id="seasonVal">—</b></span>
+      <input id="seasonSlider" type="range" min="1" max="365" step="1" value="1" aria-label="Day of the year">
+    </label>
+    <div class="detents" id="detents"></div>
+    <label class="slider">
+      <span class="slabel">Latitude <b id="latVal">—</b></span>
+      <input id="latSlider" type="range" min="-66" max="66" step="1" value="48" aria-label="Latitude">
+    </label>
+  </section>
+
+  <div class="controls">
+    <button class="primary" id="useLoc">Use my location</button>
+    <div class="combo">
+      <input id="citySearch" type="text" placeholder="Search a capital…" autocomplete="off"
+             role="combobox" aria-expanded="false" aria-controls="cityList" aria-autocomplete="list"
+             aria-label="Search a capital city">
+      <ul id="cityList" class="city-list" role="listbox" hidden></ul>
+    </div>
+    <span class="manual">
+      <input id="latIn" inputmode="decimal" placeholder="lat" aria-label="latitude">
+      <input id="lngIn" inputmode="decimal" placeholder="lng" aria-label="longitude">
+      <button id="setManual">Set</button>
+    </span>
+  </div>
+  <div class="err" id="err"></div>
+
+  <h2 class="apparatus-title">Notes &amp; references</h2>
+
+  <details>
+    <summary>What am I looking at?</summary>
+    <div class="about">
+      <p>This clock tells time the way the ancient Babylonians did: in <em>seasonal hours</em>. Daylight is split into 12 equal hours and night into 12 equal hours — so an "hour" isn't fixed at 60 minutes. It stretches in summer and shrinks in winter, and day-hours differ from night-hours. The gold arc above the horizon is daytime; the indigo arc below is night. Watch how their sizes change with the season and your latitude.</p>
+      <p>The readout is <code>H<span class="sc">h</span> UU:GG</code> plus a day-part:</p>
+      <ul>
+        <li><b>H</b> — the seasonal hour (<em>simanu</em>), 0–11 since sunrise or sunset.</li>
+        <li><b><span class="sc">uš</span></b> — ~4 minutes (1° of the sun's motion); counts up to a location-dependent max per hour.</li>
+        <li><b><span class="sc">gar</span></b> — ~4 seconds; 60 to an <span class="sc">uš</span>.</li>
+      </ul>
+      <p>The four day-parts, Babylonian AM/PM:</p>
+      <ul>
+        <li><b>ASR</b> after sunrise · <b>BST</b> before sunset</li>
+        <li><b>AST</b> after sunset · <b>BSR</b> before sunrise</li>
+      </ul>
+      <h4>What's different from the original</h4>
+      <p>Sunrise and sunset are computed in your browser from the <a href="https://en.wikipedia.org/wiki/Sunrise_equation" target="_blank" rel="noopener">sunrise equation</a> — no external APIs, works offline. Location comes from your device (with your permission) or the picker above.</p>
+    </div>
+  </details>
+
+  <details class="refs">
+    <summary>Further reading</summary>
+    <p class="refs-lead">Scholarly and educational sources on Babylonian seasonal hours and timekeeping.</p>
+    <ul>
+      <li>Rochberg-Halton, F. “Babylonian Seasonal Hours.” <cite>Centaurus</cite> 32, no. 2 (1989): 146–170. <a href="https://doi.org/10.1111/j.1600-0498.1989.tb00843.x" target="_blank" rel="noopener">doi:10.1111/j.1600-0498.1989.tb00843.x</a></li>
+      <li>Stephenson, F. R., &amp; Fatoohi, L. J. “The Babylonian Unit of Time.” <cite>Journal for the History of Astronomy</cite> 25 (1994). <a href="https://doi.org/10.1177/002182869402500203" target="_blank" rel="noopener">doi:10.1177/002182869402500203</a></li>
+      <li>“The Relation of Babylonian Astronomy to its Culture and Transmission.” <cite>IAU Symposium</cite> 260 (2011). <a href="https://adsabs.harvard.edu/pdf/2011IAUS..260...62H" target="_blank" rel="noopener">Harvard ADS (PDF)</a></li>
+      <li>Cuneiform Digital Library Initiative — an open academic database of cuneiform tablets, including astronomical and time-reckoning texts. <a href="https://cdli.mpiwg-berlin.mpg.de/" target="_blank" rel="noopener">cdli.mpiwg-berlin.mpg.de</a></li>
+    </ul>
+  </details>
+
+  <p class="credit">Concept &amp; scholarship by Willis Monroe — <a href="https://github.com/willismonroe/babylonian-hours" target="_blank" rel="noopener">original project</a>. Modern rebuild by <a href="https://github.com/gaassassins" target="_blank" rel="noopener">gaassassins</a>.</p>
+</div>
+
+<!--SCRIPT-->
+</body>
+</html>

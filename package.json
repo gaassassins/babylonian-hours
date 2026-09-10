@@ -11,10 +11,12 @@
     "url": "https://github.com/gaassassins/babylonian-hours.git"
   },
   "scripts": {
+    "build": "node build.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "vitest": "^5.0.0"
   }
 }
