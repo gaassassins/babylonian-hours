@@ -10,10 +10,10 @@ function daytimeFrame(dayUTC, lat, lng) {
 
 describe("babylon — invariants across locations and dates", () => {
   const samples = [
-    [Date.UTC(2026, 8, 8), 48.8566, 2.3522],  // Paris, September
-    [Date.UTC(2026, 5, 21), 60, 0],           // 60°N, June solstice (long day)
-    [Date.UTC(2026, 11, 21), 60, 0],          // 60°N, December solstice (short day)
-    [Date.UTC(2026, 2, 20), 0, 0],            // equator, March equinox
+    [Date.UTC(2026, 8, 8), 48.8566, 2.3522], // Paris, September
+    [Date.UTC(2026, 5, 21), 60, 0], // 60°N, June solstice (long day)
+    [Date.UTC(2026, 11, 21), 60, 0], // 60°N, December solstice (short day)
+    [Date.UTC(2026, 2, 20), 0, 0], // equator, March equinox
     [Date.UTC(2026, 0, 15), -33.8688, 151.2], // Sydney, January
   ];
 
@@ -42,12 +42,10 @@ describe("babylon — invariants across locations and dates", () => {
 
 describe("babylon — seasonal behaviour", () => {
   it("makes a 60°N summer day-hour much longer than a winter one", () => {
-    const summer = babylon(
-      ...midday(daytimeFrame(Date.UTC(2026, 5, 21), 60, 0)));
-    const winter = babylon(
-      ...midday(daytimeFrame(Date.UTC(2026, 11, 21), 60, 0)));
-    expect(summer.lDayMin).toBeGreaterThan(80);   // ~94 min
-    expect(winter.lDayMin).toBeLessThan(40);      // ~29 min
+    const summer = babylon(...midday(daytimeFrame(Date.UTC(2026, 5, 21), 60, 0)));
+    const winter = babylon(...midday(daytimeFrame(Date.UTC(2026, 11, 21), 60, 0)));
+    expect(summer.lDayMin).toBeGreaterThan(80); // ~94 min
+    expect(winter.lDayMin).toBeLessThan(40); // ~29 min
     expect(summer.dayFrac).toBeGreaterThan(winter.dayFrac);
   });
 

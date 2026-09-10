@@ -19,13 +19,27 @@ export function babylon(now, f) {
   let h = Math.min(11, Math.max(0, Math.floor(into / hourLen)));
   const intoHour = into - h * hourLen;
   const ush = Math.min(ushMax - 1, Math.floor(intoHour / (hourLen / ushMax)));
-  const gar = Math.min(59, Math.floor((intoHour - ush * (hourLen / ushMax)) / (hourLen / garPerHour)));
+  const gar = Math.min(
+    59,
+    Math.floor((intoHour - ush * (hourLen / ushMax)) / (hourLen / garPerHour)),
+  );
   let part, partLong;
-  if (f.daytime) { part = h < 6 ? "ASR" : "BST"; partLong = h < 6 ? "after sunrise" : "before sunset"; }
-  else           { part = h < 6 ? "AST" : "BSR"; partLong = h < 6 ? "after sunset"  : "before sunrise"; }
+  if (f.daytime) {
+    part = h < 6 ? "ASR" : "BST";
+    partLong = h < 6 ? "after sunrise" : "before sunset";
+  } else {
+    part = h < 6 ? "AST" : "BSR";
+    partLong = h < 6 ? "after sunset" : "before sunrise";
+  }
   return {
-    h, ush, gar, part, partLong,
-    lDayMin: lDay / 12 / 60000, lNightMin: lNight / 12 / 60000, ushMax,
+    h,
+    ush,
+    gar,
+    part,
+    partLong,
+    lDayMin: lDay / 12 / 60000,
+    lNightMin: lNight / 12 / 60000,
+    ushMax,
     dayFrac: lDay / MS_DAY,
   };
 }

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { sunEvents, frameFor, dayOfYear, MS_DAY } from "../src/astronomy.js";
 
 // Minutes since UTC midnight of a Date's own day.
-const utcMinutes = d => d.getUTCHours() * 60 + d.getUTCMinutes();
+const utcMinutes = (d) => d.getUTCHours() * 60 + d.getUTCMinutes();
 
 describe("sunEvents — known ephemeris", () => {
   // Reference: sunrise-sunset.org for Paris (48.8566, 2.3522) on 2026-09-08 (UTC):
@@ -66,7 +66,7 @@ describe("frameFor — night that straddles midnight", () => {
   });
   it("starts at yesterday's sunset and ends at today's sunrise", () => {
     expect(f.start.getTime()).toBeLessThan(now.getTime());
-    expect(f.end.getTime()).toBe(f.sr.getTime());          // ends at today's sunrise
+    expect(f.end.getTime()).toBe(f.sr.getTime()); // ends at today's sunrise
     expect(f.start.getTime()).toBeLessThan(f.sr.getTime()); // started the previous evening
   });
   it("has a night length close to 24h minus the daylight length", () => {
@@ -74,7 +74,7 @@ describe("frameFor — night that straddles midnight", () => {
     // 24h - today's daylight: day length drifts a couple of minutes per day near
     // the equinox, so allow 10 minutes of slack rather than asserting equality.
     const dayMs = f.ss - f.sr;
-    expect(Math.abs((f.end - f.start) - (MS_DAY - dayMs))).toBeLessThan(10 * 60 * 1000);
+    expect(Math.abs(f.end - f.start - (MS_DAY - dayMs))).toBeLessThan(10 * 60 * 1000);
   });
 });
 
