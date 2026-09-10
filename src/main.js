@@ -217,6 +217,15 @@ function currentSample() {
   return { now: new Date(), lat: LAT, lng: LNG };
 }
 
+// Screen-reader announcement — only speaks when the sentence changes (about once
+// per seasonal hour, or on a location / mode change), never on every tick.
+let lastAnnounce = "";
+function announce(text) {
+  if (text === lastAnnounce) return;
+  lastAnnounce = text;
+  $("a11y").textContent = text;
+}
+
 function tick() {
   const S = currentSample();
   const now = S.now,
@@ -234,6 +243,11 @@ function tick() {
     $("civilLine").innerHTML = explore.active
       ? "The sun stays " + (f.polar === "day" ? "above" : "below") + " the horizon all day"
       : "";
+    announce(
+      (f.polar === "day" ? "Midnight sun" : "Polar night") +
+        " at " +
+        (explore.active ? latLabel(S.lat) : LOCNAME),
+    );
     currentFrac = null;
     pendingAnimate = false;
     return;
@@ -251,6 +265,14 @@ function tick() {
   $("sNight").innerHTML = b.lNightMin.toFixed(1) + " <small>min</small>";
   $("sUsh").textContent = b.ushMax;
   $("civilLine").innerHTML = explore.active ? exploreCivil(f) : liveCivil(now, f);
+  announce(
+    "Seasonal hour " +
+      b.h +
+      ", " +
+      b.partLong +
+      ", at " +
+      (explore.active ? latLabel(S.lat) : LOCNAME),
+  );
 }
 
 function setLocation(lat, lng, name, tz) {
